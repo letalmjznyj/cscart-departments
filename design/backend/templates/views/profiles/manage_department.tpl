@@ -11,7 +11,7 @@
         {$rev=$smarty.request.content_id|default:"pagination_contents_departments"}
         {include_ext file="common/icon.tpl" class="icon-`$search.sort_order_rev`" assign=c_icon}
         {include_ext file="common/icon.tpl" class="icon-dummy" assign=c_dummy}
-        {$banner_statuses=""|fn_get_default_statuses:true}
+        {$department_statuses=""|fn_get_default_statuses:true}
         {$has_permission = fn_check_permissions("departments", "update_status", "admin", "POST")}
         
         {if $departments}
@@ -24,7 +24,7 @@
                     >
                     <tr>
                         <th width="6%" class="left mobile-hide">
-                            {include file="common/check_items.tpl" is_check_disabled=!$has_permission check_statuses=($has_permission) ? $banner_statuses : '' }
+                            {include file="common/check_items.tpl" is_check_disabled=!$has_permission check_statuses=($has_permission) ? $department_statuses : '' }
         
                             <input type="checkbox"
                                 class="bulkedit-toggler hide"
@@ -35,15 +35,17 @@
                         <th><a class="cm-ajax" href="{"`$c_url`&sort_by=name&sort_order=`$search.sort_order_rev`"|fn_url}" data-ca-target-id={$rev}>{__("name")}{if $search.sort_by === "name"}{$c_icon nofilter}{else}{$c_dummy nofilter}{/if}</a></th>
         
                         <th width="6%" class="mobile-hide">&nbsp;</th>
-                        <th width="10%" class="right"><a class="cm-ajax" href="{"`$c_url`&sort_by=status&sort_order=`$search.sort_order_rev`"|fn_url}" data-ca-target-id={$rev}>{__("status")}{if $search.sort_by === "status"}{$c_icon nofilter}{/if}</a></th>
+                        <th width="10%" class="right">
+                            <a class="cm-ajax" href="{"`$c_url`&sort_by=status&sort_order=`$search.sort_order_rev`"|fn_url}" data-ca-target-id={$rev}>{__("status")}{if $search.sort_by === "status"}{$c_icon nofilter}{/if}</a>
+                        </th>
                     </tr>
                     </thead>
                     {foreach from=$departments item=collection}
-                    <tr class="cm-row-status-{$banner.status|lower} cm-longtap-target"
+                    <tr class="cm-row-status-{$department.status|lower} cm-longtap-target"
                         {if $has_permission}
                             data-ca-longtap-action="setCheckBox"
                             data-ca-longtap-target="input.cm-item"
-                            data-ca-id="{$banner.banner_id}"
+                            data-ca-id="{$department.department_id}"
                         {/if}
                     >
                         {$allow_save = true}
@@ -54,29 +56,28 @@
                             {$no_hide_input=""}
                         {/if}
         
-                        <td width="6%" class="left mobile-hide">
-                            <input type="checkbox" name="collections_ids[]" value="{$banner.banner_id}" class="cm-item {$no_hide_input} cm-item-status-{$banner.status|lower} hide" /></td>
+                        {* <td width="6%" class="left mobile-hide">
+                            <input type="checkbox" name="departments_ids[]" value="{$department.department_id}" class="cm-item {$no_hide_input} cm-item-status-{$department.status|lower} hide" />
+                        </td> *}
                         <td class="{$no_hide_input}" data-th="{__("name")}">
-                            <a class="row-status" href="{"collections.update?collection_id=`$banner.banner_id`"|fn_url}">{$banner.banner}</a>
-                            {include file="views/companies/components/company_name.tpl" object=$banner}
+                            <a class="row-status" href="{"departments.update?collection_id=`$department.department_id`"|fn_url}">{$department.banner}</a>
+                            {include file="views/companies/components/company_name.tpl" object=$department}
                         </td>
-                        <td width="10%" class="nowrap row-status {$no_hide_input} mobile-hide">
-                            {hook name="collections:manage_banner_type"}
-                            {if $banner.type == "G"}{__("graphic_banner")}{else}{__("text_banner")}{/if}
+
+                        {* <td width="10%" class="nowrap row-status {$no_hide_input} mobile-hide">
+                            {hook name="departments:manage_banner_type"}
+                            {if $department.type == "G"}{__("graphic_banner")}{else}{__("text_banner")}{/if}
                             {/hook}
                         </td>
                         <td width="15%" data-th="{__("creation_date")}">
-                            {$banner.timestamp|date_format:"`$settings.Appearance.date_format`, `$settings.Appearance.time_format`"}
-                        </td>
-        
-                        {hook name="collections:manage_data"}
-                        {/hook}
-        
+                            {$department.timestamp|date_format:"`$settings.Appearance.date_format`, `$settings.Appearance.time_format`"}
+                        </td> *}
+
                         <td width="6%" class="mobile-hide">
                             {capture name="tools_list"}
-                                <li>{btn type="list" text=__("edit") href="collections.update?banner_id=`$banner.banner_id`"}</li>
+                                <li>{btn type="list" text=__("edit") href="departments.update?department_id=`$department.department_id`"}</li>
                             {if $allow_save}
-                                <li>{btn type="list" class="cm-confirm" text=__("delete") href="collections.delete?banner_id=`$banner.banner_id`" method="POST"}</li>
+                                <li>{btn type="list" class="cm-confirm" text=__("delete") href="departments.delete?department_id=`$department.department_id`" method="POST"}</li>
                             {/if}
                             {/capture}
                             <div class="hidden-tools">
@@ -84,7 +85,7 @@
                             </div>
                         </td>
                         <td width="10%" class="right" data-th="{__("status")}">
-                            {include file="common/select_popup.tpl" id=$banner.banner_id status=$banner.status hidden=true object_id_name="banner_id" table="collections" popup_additional_class="`$no_hide_input` dropleft"}
+                            {include file="common/select_popup.tpl" id=$department.department_id status=$department.status hidden=true object_id_name="department_id" table="departments" popup_additional_class="`$no_hide_input` dropleft"}
                         </td>
                     </tr>
                     {/foreach}
@@ -93,20 +94,20 @@
             {/capture}
         
             {include file="common/context_menu_wrapper.tpl"
-                form="collections_form"
-                object="collections"
-                items=$smarty.capture.collections_table
+                form="departments_form"
+                object="departments"
+                items=$smarty.capture.departments_table
                 has_permissions=$has_permission
             }
         {else}
             <p class="no-items">{__("no_data")}</p>
         {/if}
         
-        {include file="common/pagination.tpl" div_id="pagination_contents_collections"}
+        {include file="common/pagination.tpl" div_id="pagination_contents_departments"}
         
         {capture name="adv_buttons"}
-            {hook name="collections:adv_buttons"}
-            {include file="common/tools.tpl" tool_href="collections.add" prefix="top" hide_tools="true" title=__("add_banner") icon="icon-plus"}
+            {hook name="departments:adv_buttons"}
+            {include file="common/tools.tpl" tool_href="profiles.update_department" prefix="top" hide_tools="true" title=__("Создать отдел") icon="icon-plus"}
             {/hook}
         {/capture}
         
@@ -115,8 +116,8 @@
 {/capture}
     
     
-    {hook name="collections:manage_mainbox_params"}
-        {$page_title = __("collections")}
+    {hook name="departments:manage_mainbox_params"}
+        {$page_title = __("Отделы")}
         {$select_languages = true}
     {/hook}
     
