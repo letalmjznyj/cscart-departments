@@ -18,77 +18,74 @@
             {capture name="departments_table"}
                 <div class="table-responsive-wrapper longtap-selection">
                     <table class="table table-middle table--relative table-responsive">
-                    <thead
-                        data-ca-bulkedit-default-object="true"
-                        data-ca-bulkedit-component="defaultObject"
-                    >
-                    <tr>
-                        <th width="6%" class="left mobile-hide">
-                            {include file="common/check_items.tpl" is_check_disabled=!$has_permission check_statuses=($has_permission) ? $department_statuses : '' }
-        
-                            <input type="checkbox"
-                                class="bulkedit-toggler hide"
-                                data-ca-bulkedit-disable="[data-ca-bulkedit-default-object=true]"
-                                data-ca-bulkedit-enable="[data-ca-bulkedit-expanded-object=true]"
-                            />
-                        </th>
-                        <th><a class="cm-ajax" href="{"`$c_url`&sort_by=name&sort_order=`$search.sort_order_rev`"|fn_url}" data-ca-target-id={$rev}>{__("name")}{if $search.sort_by === "name"}{$c_icon nofilter}{else}{$c_dummy nofilter}{/if}</a></th>
-        
-                        <th width="6%" class="mobile-hide">&nbsp;</th>
-                        <th width="10%" class="right">
-                            <a class="cm-ajax" href="{"`$c_url`&sort_by=status&sort_order=`$search.sort_order_rev`"|fn_url}" data-ca-target-id={$rev}>{__("status")}{if $search.sort_by === "status"}{$c_icon nofilter}{/if}</a>
-                        </th>
-                    </tr>
-                    </thead>
-                    {foreach from=$departments item=collection}
-                    <tr class="cm-row-status-{$department.status|lower} cm-longtap-target"
-                        {if $has_permission}
-                            data-ca-longtap-action="setCheckBox"
-                            data-ca-longtap-target="input.cm-item"
-                            data-ca-id="{$department.department_id}"
-                        {/if}
-                    >
-                        {$allow_save = true}
+                        <thead
+                            data-ca-bulkedit-default-object="true"
+                            data-ca-bulkedit-component="defaultObject"
+                        >
+                        <tr>
+                            <th width="6%" class="left mobile-hide">
+                                {include file="common/check_items.tpl" is_check_disabled=!$has_permission check_statuses=($has_permission) ? $department_statuses : '' }
+            
+                                <input type="checkbox"
+                                    class="bulkedit-toggler hide"
+                                    data-ca-bulkedit-disable="[data-ca-bulkedit-default-object=true]"
+                                    data-ca-bulkedit-enable="[data-ca-bulkedit-expanded-object=true]"
+                                />
+                            </th>
+                            <th><a class="cm-ajax" href="{"`$c_url`&sort_by=name&sort_order=`$search.sort_order_rev`"|fn_url}" data-ca-target-id={$rev}>{__("name")}{if $search.sort_by === "name"}{$c_icon nofilter}{else}{$c_dummy nofilter}{/if}</a></th>
+                            <th width="6%" class="mobile-hide">&nbsp;</th>
+                            <th width="10%" class="right">
+                                <a class="cm-ajax" href="{"`$c_url`&sort_by=status&sort_order=`$search.sort_order_rev`"|fn_url}" data-ca-target-id={$rev}>{__("status")}{if $search.sort_by === "status"}{$c_icon nofilter}{/if}</a>
+                            </th>
+                        </tr>
+                        </thead>
+                        {foreach from=$departments item=department}
+                            <tr class="cm-row-status-{$department.status|lower} cm-longtap-target"
+                                {if $has_permission}
+                                    data-ca-longtap-action="setCheckBox"
+                                    data-ca-longtap-target="input.cm-item"
+                                    data-ca-id="{$department.department_id}"
+                                {/if}
+                            >
+                                {$allow_save = true}
 
-                        {if $allow_save}
-                            {$no_hide_input="cm-no-hide-input"}
-                        {else}
-                            {$no_hide_input=""}
-                        {/if}
-        
-                        {* <td width="6%" class="left mobile-hide">
-                            <input type="checkbox" name="departments_ids[]" value="{$department.department_id}" class="cm-item {$no_hide_input} cm-item-status-{$department.status|lower} hide" />
-                        </td> *}
-                        <td class="{$no_hide_input}" data-th="{__("name")}">
-                            <a class="row-status" href="{"departments.update?collection_id=`$department.department_id`"|fn_url}">{$department.banner}</a>
-                            {include file="views/companies/components/company_name.tpl" object=$department}
-                        </td>
+                                {if $allow_save}
+                                    {$no_hide_input="cm-no-hide-input"}
+                                {else}
+                                    {$no_hide_input=""}
+                                {/if}
+                
+                                <td class="{$no_hide_input}" data-th="{__("name")}">
+                                    <a class="row-status" href="{"profiles.update_department?department_id=`$department.department_id`"|fn_url}">{$department.department}</a>
+                                    {include file="views/companies/components/company_name.tpl" object=$department}
+                                </td>
 
-                        {* <td width="10%" class="nowrap row-status {$no_hide_input} mobile-hide">
-                            {hook name="departments:manage_banner_type"}
-                            {if $department.type == "G"}{__("graphic_banner")}{else}{__("text_banner")}{/if}
-                            {/hook}
-                        </td>
-                        <td width="15%" data-th="{__("creation_date")}">
-                            {$department.timestamp|date_format:"`$settings.Appearance.date_format`, `$settings.Appearance.time_format`"}
-                        </td> *}
-
-                        <td width="6%" class="mobile-hide">
-                            {capture name="tools_list"}
-                                <li>{btn type="list" text=__("edit") href="departments.update?department_id=`$department.department_id`"}</li>
-                            {if $allow_save}
-                                <li>{btn type="list" class="cm-confirm" text=__("delete") href="departments.delete?department_id=`$department.department_id`" method="POST"}</li>
-                            {/if}
-                            {/capture}
-                            <div class="hidden-tools">
-                                {dropdown content=$smarty.capture.tools_list}
-                            </div>
-                        </td>
-                        <td width="10%" class="right" data-th="{__("status")}">
-                            {include file="common/select_popup.tpl" id=$department.department_id status=$department.status hidden=true object_id_name="department_id" table="departments" popup_additional_class="`$no_hide_input` dropleft"}
-                        </td>
-                    </tr>
-                    {/foreach}
+                                <td width="6%" class="mobile-hide">
+                                    {capture name="tools_list"}
+                                        <li>{btn type="list" text=__("edit") href="profiles.update_department?department_id=`$department.department_id`"}</li>
+                                    {if $allow_save}
+                                        <li>{btn type="list" class="cm-confirm" text=__("delete") href="profiles.delete_department?department_id=`$department.department_id`" method="POST"}</li>
+                                    {/if}
+                                    {/capture}
+                                    <div class="hidden-tools">
+                                        {dropdown content=$smarty.capture.tools_list}
+                                    </div>
+                                </td>
+                                <td class="{$no_hide_input}" data-th="Руководитель">
+                                    <a class="row-status" href="{"profiles.update_department?department_id=`$department.department_id`"|fn_url}">
+                                        {foreach $admins as $key => $value}
+                                            {if $value.user_id == $department.admin_id}
+                                                {$value.firstname} {$value.lastname}
+                                            {/if}
+                                        {/foreach}
+                                    </a>
+                                    {include file="views/companies/components/company_name.tpl" object=$banner}
+                                </td>
+                                <td width="10%" class="right" data-th="{__("status")}">
+                                    {include file="common/select_popup.tpl" id=$department.department_id status=$department.status hidden=true object_id_name="department_id" table="departments" popup_additional_class="`$no_hide_input` dropleft"}
+                                </td>
+                            </tr>
+                        {/foreach}
                     </table>
                 </div>
             {/capture}
@@ -107,27 +104,25 @@
         
         {capture name="adv_buttons"}
             {hook name="departments:adv_buttons"}
-            {include file="common/tools.tpl" tool_href="profiles.update_department" prefix="top" hide_tools="true" title=__("Создать отдел") icon="icon-plus"}
+                {include file="common/tools.tpl" tool_href="profiles.update_department" prefix="top" hide_tools="true" title=__("Создать отдел") icon="icon-plus"}
             {/hook}
         {/capture}
         
     </form>
-    
 {/capture}
     
     
     {hook name="departments:manage_mainbox_params"}
-        {$page_title = __("Отделы")}
+        {$page_title = ("Отделы")}
         {$select_languages = true}
     {/hook}
     
     {include
-     file="common/mainbox.tpl" 
-     title=$page_title 
-     content=$smarty.capture.mainbox 
-     adv_buttons=$smarty.capture.adv_buttons 
-     select_languages=$select_languages
-     }
+        file="common/mainbox.tpl" 
+        title=$page_title 
+        content=$smarty.capture.mainbox 
+        adv_buttons=$smarty.capture.adv_buttons 
+        select_languages=$select_languages
+    }
     
     {** ad section **}
-    

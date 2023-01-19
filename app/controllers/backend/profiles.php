@@ -21,6 +21,7 @@ use Tygh\Enum\YesNo;
 use Tygh\Registry;
 use Tygh\Tools\Url;
 use Tygh\Tygh;
+use Tygh\Languages\Languages;
 
 defined('BOOTSTRAP') or die('Access denied');
 
@@ -819,13 +820,29 @@ if ($mode === 'get_manager_list') {
 
     return[CONTROLLER_STATUS_NO_CONTENT];
 } elseif ($mode == 'add_department' || $mode == 'update_department'){
+    $department_id = !empty($_REQUEST['department_id']) ? $_REQUEST['department_id'] : 0;
+    $department_data = fn_get_department_data($department_id, DESCR_SL);
+
+//  fn_print_die($department_data);
+    if (empty($department_data) && $mode == 'update') {
+        return [CONTROLLER_STATUS_NO_PAGE];
+    }
+    Tygh::$app['view']->assign('department_data', $department_data);
     // fn_print_die(end);
 } elseif ($mode == 'manage_department'){
-    list($departments, $search) = fn_get_departments($_REQUEST, Registry::get('settings.Appearance.admin_elements_per_page'), DESCR_SL);
-    // fn_print_die($collections);
+    list($departments, $search) = fn_get_department($_REQUEST, Registry::get('settings.Appearance.admin_elements_per_page'), DESCR_SL);
+    // fn_print_die($departments);
         Tygh::$app['view']->assign('departments', $departments);
         Tygh::$app['view']->assign('search', $search);
     // fn_print_die(end);
+}
+function fn_get_department_data($department_id = 0, $lang_code = CART_LANGUAGE){
+    $department = [];
+    if(!empty($department_id)){
+        list($department) = fn_get_department(['department_id' => $department_id],1,$lang_code);
+        $department = !empty($department) ? reset($department) : [];
+    }
+    return $department;
 }
 function fn_get_department($params = [], $items_per_page = 0, $lang_code = CART_LANGUAGE){
     // Set default values to input params
@@ -841,7 +858,7 @@ function fn_get_department($params = [], $items_per_page = 0, $lang_code = CART_
    }
 
    $sortings = array(
-       'name' => '?:department_descriptions.department_name',
+       'name' => '?:department_descriptions.department',
        'status' => '?:department.status',
    );
 
@@ -865,7 +882,7 @@ function fn_get_department($params = [], $items_per_page = 0, $lang_code = CART_
    $fields = array (
        '?:department.department_id',
        '?:department.status',
-       '?:department_descriptions.department_name',
+       '?:department_descriptions.department',
        '?:department_descriptions.description'
    );
 
