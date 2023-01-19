@@ -21,6 +21,7 @@ use Tygh\Enum\YesNo;
 use Tygh\Registry;
 use Tygh\Tools\Url;
 use Tygh\Tygh;
+use Tygh\Languages\Languages;
 
 defined('BOOTSTRAP') or die('Access denied');
 
@@ -818,4 +819,87 @@ if ($mode === 'get_manager_list') {
     Tygh::$app['ajax']->assign('total_objects', isset($params['total_items']) ? $params['total_items'] : count($objects));
 
     return[CONTROLLER_STATUS_NO_CONTENT];
+} elseif ($mode == 'add_department' || $mode == 'update_department'){
+    $department_id = !empty($_REQUEST['department_id']) ? $_REQUEST['department_id'] : 0;
+    $department_data = fn_get_department_data($department_id, DESCR_SL);
+
+//  fn_print_die($department_data);
+    if (empty($department_data) && $mode == 'update') {
+        return [CONTROLLER_STATUS_NO_PAGE];
+    }
+    Tygh::$app['view']->assign('department_data', $department_data);
+    // fn_print_die(end);
+} elseif ($mode == 'manage_department'){
+    list($departments, $search) = fn_get_department($_REQUEST, Registry::get('settings.Appearance.admin_elements_per_page'), DESCR_SL);
+    // fn_print_die($departments);
+        Tygh::$app['view']->assign('departments', $departments);
+        Tygh::$app['view']->assign('search', $search);
+    // fn_print_die(end);
+}
+function fn_get_department_data($department_id = 0, $lang_code = CART_LANGUAGE){
+    $department = [];
+    if(!empty($department_id)){
+        list($department) = fn_get_department(['department_id' => $department_id],1,$lang_code);
+        $department = !empty($department) ? reset($department) : [];
+    }
+    return $department;
+}
+function fn_get_department($params = [], $items_per_page = 0, $lang_code = CART_LANGUAGE){
+    // Set default values to input params
+    $default_params = array(
+       'page' => 1,
+       'items_per_page' => $items_per_page
+   );
+
+   $params = array_merge($default_params, $params);
+
+   if (AREA == 'C') {
+       $params['status'] = 'A';
+   }
+
+   $sortings = array(
+       'name' => '?:department_descriptions.department',
+       'status' => '?:department.status',
+   );
+
+   $condition = $limit = $join = '';
+
+   if (!empty($params['limit'])) {
+       $limit = db_quote(' LIMIT 0, ?i', $params['limit']);
+   }
+
+   $sorting = db_sort($params, $sortings, 'name', 'asc');
+
+
+   if (!empty($params['item_ids'])) {
+       $condition .= db_quote(' AND ?:department.department_id IN (?n)', explode(',', $params['item_ids']));
+   }
+
+   if (!empty($params['status'])) {
+       $condition .= db_quote(' AND ?:department.status = ?s', $params['status']);
+   }
+
+   $fields = array (
+       '?:department.department_id',
+       '?:department.status',
+       '?:department_descriptions.department',
+       '?:department_descriptions.description'
+   );
+
+
+   $join .= db_quote(' LEFT JOIN ?:department_descriptions ON ?:department_descriptions.department_id = ?:department.department_id AND ?:department_descriptions.lang_code = ?s', $lang_code);
+
+   if (!empty($params['items_per_page'])) {
+       $params['total_items'] = db_get_field("SELECT COUNT(*) FROM ?:department $join WHERE 1 $condition");
+       $limit = db_paginate($params['page'], $params['items_per_page'], $params['total_items']);
+   }
+
+   $department = db_get_hash_array(
+       "SELECT ?p FROM ?:department " .
+       $join .
+       "WHERE 1 ?p ?p ?p",
+       'department_id', implode(', ', $fields), $condition, $sorting, $limit
+   );
+
+   return array($department, $params);
 }
